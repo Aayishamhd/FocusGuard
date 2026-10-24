@@ -1,0 +1,137 @@
+{
+  "scenarios": {
+    "stable-work": {
+      "eventId": "ae-stable-001",
+      "timestamp": "2026-10-24T22:00:00.000Z",
+      "attentionState": "FOCUSED",
+      "confidence": 0.95,
+      "activeApp": {
+        "appName": "Visual Studio Code",
+        "windowTitle": "FocusGuard/assistant/src/server.py",
+        "category": "work"
+      },
+      "metrics": {
+        "sessionDurationSeconds": 1800,
+        "appDurationSeconds": 600,
+        "recentSwitchCount": 1,
+        "inactivitySeconds": 4,
+        "webcamEngaged": true
+      },
+      "sources": ["window_tracker", "activity_monitor", "webcam_headpose"]
+    },
+    "productive-research": {
+      "eventId": "ae-research-002",
+      "timestamp": "2026-10-24T22:05:00.000Z",
+      "attentionState": "FOCUSED",
+      "confidence": 0.82,
+      "activeApp": {
+        "appName": "Google Chrome",
+        "windowTitle": "FastAPI Documentation - Lifespan Events",
+        "category": "utility"
+      },
+      "metrics": {
+        "sessionDurationSeconds": 2400,
+        "appDurationSeconds": 120,
+        "recentSwitchCount": 2,
+        "inactivitySeconds": 10,
+        "webcamEngaged": false
+      },
+      "sources": ["window_tracker", "activity_monitor"]
+    },
+    "heavy-distraction": {
+      "eventId": "ae-distract-003",
+      "timestamp": "2026-10-24T22:15:00.000Z",
+      "attentionState": "DISTRACTED",
+      "confidence": 0.88,
+      "activeApp": {
+        "appName": "YouTube",
+        "windowTitle": "Top 10 Mechanical Keyboards 2026",
+        "category": "entertainment"
+      },
+      "metrics": {
+        "sessionDurationSeconds": 3100,
+        "appDurationSeconds": 420,
+        "recentSwitchCount": 6,
+        "inactivitySeconds": 25,
+        "webcamEngaged": false
+      },
+      "sources": ["window_tracker", "activity_monitor"]
+    },
+    "prolonged-focus": {
+      "eventId": "ae-fatigue-004",
+      "timestamp": "2026-10-24T22:30:00.000Z",
+      "attentionState": "FOCUSED",
+      "confidence": 0.90,
+      "activeApp": {
+        "appName": "Visual Studio Code",
+        "windowTitle": "main.py - Engine",
+        "category": "work"
+      },
+      "metrics": {
+        "sessionDurationSeconds": 5700,
+        "appDurationSeconds": 2100,
+        "recentSwitchCount": 2,
+        "inactivitySeconds": 3,
+        "webcamEngaged": true
+      },
+      "sources": ["window_tracker", "activity_monitor"]
+    },
+    "missing-context": {
+      "eventId": "ae-missing-005",
+      "timestamp": "2026-10-24T22:35:00.000Z",
+      "attentionState": "IDLE",
+      "confidence": 0.20,
+      "activeApp": {
+        "appName": "System",
+        "windowTitle": "Desktop",
+        "category": "unknown"
+      },
+      "metrics": {
+        "sessionDurationSeconds": 40,
+        "appDurationSeconds": 10,
+        "recentSwitchCount": 0,
+        "inactivitySeconds": 15,
+        "webcamEngaged": false
+      },
+      "sources": ["window_tracker"]
+    },
+    "stuck-assistance": {
+      "eventId": "ae-stuck-006",
+      "timestamp": "2026-10-24T22:40:00.000Z",
+      "attentionState": "RECOVERING",
+      "confidence": 0.75,
+      "activeApp": {
+        "appName": "Visual Studio Code",
+        "windowTitle": "ComplexAlgorithm.cpp",
+        "category": "work"
+      },
+      "metrics": {
+        "sessionDurationSeconds": 2800,
+        "appDurationSeconds": 60,
+        "recentSwitchCount": 5,
+        "inactivitySeconds": 45,
+        "webcamEngaged": false
+      },
+      "sources": ["window_tracker", "activity_monitor"]
+    },
+    "mild-drift": {
+      "eventId": "ae-drift-007",
+      "timestamp": "2026-10-24T22:45:00.000Z",
+      "attentionState": "POSSIBLY_DRIFTING",
+      "confidence": 0.70,
+      "activeApp": {
+        "appName": "Google Chrome",
+        "windowTitle": "New Tab",
+        "category": "utility"
+      },
+      "metrics": {
+        "sessionDurationSeconds": 1200,
+        "appDurationSeconds": 180,
+        "recentSwitchCount": 3,
+        "inactivitySeconds": 130,
+        "webcamEngaged": false
+      },
+      "sources": ["window_tracker", "activity_monitor"]
+    }
+  }
+}
