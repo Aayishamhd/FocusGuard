@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { AppProvider, useAppStore } from "./store/appStore";
+import { TitleBar } from "./components/TitleBar";
 import { Sidebar } from "./components/Sidebar";
 import { ErrorBanner } from "./components/ErrorBanner";
 import { Dashboard } from "./pages/Dashboard";
@@ -9,7 +10,17 @@ import "./styles/global.css";
 import "./styles/app.css";
 
 function AppShell(): JSX.Element {
-  const { state, setError } = useAppStore();
+  const { state, setError, setPage } = useAppStore();
+
+  // Listen for native notification clicks to navigate user to relevant context
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.focusGuard?.onNotificationClicked) {
+      const unsubscribe = window.focusGuard.onNotificationClicked(() => {
+        setPage("dashboard");
+      });
+      return unsubscribe;
+    }
+  }, [setPage]);
 
   const renderPage = (): JSX.Element => {
     switch (state.currentPage) {
@@ -22,13 +33,16 @@ function AppShell(): JSX.Element {
 
   return (
     <div className="app">
-      <Sidebar />
-      <main className="main-content" id="main-content" role="main">
-        {state.error && (
-          <ErrorBanner message={state.error} onDismiss={() => setError(null)} />
-        )}
-        {renderPage()}
-      </main>
+      <TitleBar />
+      <div className="app__body">
+        <Sidebar />
+        <main className="main-content" id="main-content" role="main">
+          {state.error && (
+            <ErrorBanner message={state.error} onDismiss={() => setError(null)} />
+          )}
+          {renderPage()}
+        </main>
+      </div>
     </div>
   );
 }
@@ -40,3 +54,4 @@ export function App(): JSX.Element {
     </AppProvider>
   );
 }
+

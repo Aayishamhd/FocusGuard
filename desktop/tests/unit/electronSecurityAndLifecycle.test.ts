@@ -59,6 +59,11 @@ describe("Phase 13 — Electron Security & IPC Handlers Validation", () => {
       "fg:save-intervention",
       "fg:save-session",
       "fg:set-preferences",
+      "fg:show-notification",
+      "fg:window-close",
+      "fg:window-is-maximized",
+      "fg:window-maximize-toggle",
+      "fg:window-minimize",
     ].sort();
 
     expect(registeredChannels).toEqual(expectedChannels);
@@ -165,6 +170,63 @@ describe("Phase 13 — Electron Security & IPC Handlers Validation", () => {
     expect(res.success).toBe(true);
     expect(consoleSpy).toHaveBeenCalledWith("[FocusGuard Renderer Error]", "Test error message");
     consoleSpy.mockRestore();
+  });
+
+  it("fg:window controls invoke window actions defensively", async () => {
+    let minimized = false;
+    let maximized = false;
+    let closed = false;
+
+    const mockWin: any = {
+      isDestroyed: () => false,
+      minimize: () => { minimized = true; },
+      maximize: () => { maximized = true; },
+      unmaximize: () => { maximized = false; },
+      isMaximized: () => maximized,
+      close: () => { closed = true; },
+    };
+
+    // Re-register with mock window getter
+    const windowHandlers: Record<string, any> = {};
+    const localMockIpc: any = {
+      handle: (channel: string, listener: any) => { windowHandlers[channel] = listener; }
+    };
+    registerIpcHandlers(localMockIpc, storage, () => mockWin);
+
+    // Minimize
+    const minRes = await windowHandlers["fg:window-minimize"]({});
+    expect(minRes.success).toBe(true);
+    expect(minimized).toBe(true);
+
+    // Maximize toggle: normal -> maximized
+    const maxRes1 = await windowHandlers["fg:window-maximize-toggle"]({});
+    expect(maxRes1.success).toBe(true);
+    expect(maxRes1.isMaximized).toBe(true);
+    expect(maximized).toBe(true);
+
+    // Maximize toggle: maximized -> unmaximized
+    const maxRes2 = await windowHandlers["fg:window-maximize-toggle"]({});
+    expect(maxRes2.success).toBe(true);
+    expect(maxRes2.isMaximized).toBe(false);
+    expect(maximized).toBe(false);
+
+    // Close
+    const closeRes = await windowHandlers["fg:window-close"]({});
+    expect(closeRes.success).toBe(true);
+    expect(closed).toBe(true);
+  });
+
+  it("fg:show-notification validates payload and rejects non-object inputs", async () => {
+    expect(() => handlers["fg:show-notification"]({}, null)).toThrow(/Invalid notification payload/i);
+    expect(() => handlers["fg:show-notification"]({}, "not an object")).toThrow(/Invalid notification payload/i);
+
+    // Valid object executes without crashing
+    const res = (await handlers["fg:show-notification"]({}, {
+      title: "Test Alert",
+      body: "Test Body",
+      type: "reminder",
+    })) as any;
+    expect(typeof res.sent).toBe("boolean");
   });
 });
 

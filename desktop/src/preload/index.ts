@@ -49,6 +49,14 @@ export interface StorageStatsInfo {
   storageSizeBytes: number;
 }
 
+export interface NativeNotificationOptionsPayload {
+  title: string;
+  body: string;
+  type?: string;
+  silent?: boolean;
+  force?: boolean;
+}
+
 export interface FocusGuardAPI {
   getPreferences: () => Promise<StoragePreferences>;
   setPreferences: (prefs: Partial<StoragePreferences>) => Promise<{ success: boolean; preferences?: StoragePreferences }>;
@@ -66,6 +74,17 @@ export interface FocusGuardAPI {
   getStorageStats: () => Promise<StorageStatsInfo>;
   logError: (message: string) => Promise<{ success: boolean }>;
   onTrayCommand: (callback: (command: string) => void) => () => void;
+
+  // Window controls
+  minimizeWindow: () => Promise<{ success: boolean }>;
+  toggleMaximizeWindow: () => Promise<boolean>;
+  isWindowMaximized: () => Promise<boolean>;
+  closeWindow: () => Promise<{ success: boolean }>;
+  onWindowMaximizedChange: (callback: (isMaximized: boolean) => void) => () => void;
+
+  // Native notifications
+  showNotification: (options: NativeNotificationOptionsPayload) => Promise<{ sent: boolean; reason?: string }>;
+  onNotificationClicked: (callback: (payload: { type?: string }) => void) => () => void;
 }
 
 const api: FocusGuardAPI = {
@@ -91,6 +110,37 @@ const api: FocusGuardAPI = {
     ipcRenderer.on("fg:tray-command", handler);
     return () => {
       ipcRenderer.removeListener("fg:tray-command", handler);
+    };
+  },
+
+  // Window controls implementation
+  minimizeWindow: () => ipcRenderer.invoke("fg:window-minimize") as Promise<{ success: boolean }>,
+  toggleMaximizeWindow: async () => {
+    const res = (await ipcRenderer.invoke("fg:window-maximize-toggle")) as { success: boolean; isMaximized: boolean };
+    return res.isMaximized;
+  },
+  isWindowMaximized: () => ipcRenderer.invoke("fg:window-is-maximized") as Promise<boolean>,
+  closeWindow: () => ipcRenderer.invoke("fg:window-close") as Promise<{ success: boolean }>,
+  onWindowMaximizedChange: (callback: (isMaximized: boolean) => void) => {
+    const handler = (_event: unknown, isMaximized: unknown) => {
+      if (typeof isMaximized === "boolean") callback(isMaximized);
+    };
+    ipcRenderer.on("fg:window-maximized-change", handler);
+    return () => {
+      ipcRenderer.removeListener("fg:window-maximized-change", handler);
+    };
+  },
+
+  // Native notifications implementation
+  showNotification: (options: NativeNotificationOptionsPayload) =>
+    ipcRenderer.invoke("fg:show-notification", options) as Promise<{ sent: boolean; reason?: string }>,
+  onNotificationClicked: (callback: (payload: { type?: string }) => void) => {
+    const handler = (_event: unknown, payload: unknown) => {
+      callback(payload as { type?: string });
+    };
+    ipcRenderer.on("fg:notification-clicked", handler);
+    return () => {
+      ipcRenderer.removeListener("fg:notification-clicked", handler);
     };
   },
 };

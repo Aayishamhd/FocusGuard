@@ -4,7 +4,7 @@
  * Uses StorageManager inside Electron app.getPath("userData")/focusguard.
  */
 
-import { IpcMain } from "electron";
+import { IpcMain, BrowserWindow } from "electron";
 import {
   defaultStorageManager,
   StorageManager,
@@ -13,10 +13,17 @@ import {
   type StoredIntervention,
   type StorageStats,
 } from "./storageManager";
+import {
+  NotificationManager,
+  type NativeNotificationOptions,
+  type NotificationResult,
+} from "./notificationManager";
 
 export function registerIpcHandlers(
   ipcMain: IpcMain,
-  storage: StorageManager = defaultStorageManager
+  storage: StorageManager = defaultStorageManager,
+  getWindow: () => BrowserWindow | null = () => null,
+  notificationManager: NotificationManager = new NotificationManager(getWindow)
 ): void {
   // ─── Preferences ──────────────────────────────────────────────────────────
 
@@ -75,6 +82,54 @@ export function registerIpcHandlers(
     return storage.getStorageStats();
   });
 
+  // ─── Window Controls ──────────────────────────────────────────────────────
+
+  ipcMain.handle("fg:window-minimize", (): { success: boolean } => {
+    const win = getWindow();
+    if (win && !win.isDestroyed()) {
+      win.minimize();
+      return { success: true };
+    }
+    return { success: false };
+  });
+
+  ipcMain.handle("fg:window-maximize-toggle", (): { success: boolean; isMaximized: boolean } => {
+    const win = getWindow();
+    if (win && !win.isDestroyed()) {
+      if (win.isMaximized()) {
+        win.unmaximize();
+        return { success: true, isMaximized: false };
+      } else {
+        win.maximize();
+        return { success: true, isMaximized: true };
+      }
+    }
+    return { success: false, isMaximized: false };
+  });
+
+  ipcMain.handle("fg:window-is-maximized", (): boolean => {
+    const win = getWindow();
+    return Boolean(win && !win.isDestroyed() && win.isMaximized());
+  });
+
+  ipcMain.handle("fg:window-close", (): { success: boolean } => {
+    const win = getWindow();
+    if (win && !win.isDestroyed()) {
+      win.close();
+      return { success: true };
+    }
+    return { success: false };
+  });
+
+  // ─── Native Notifications ─────────────────────────────────────────────────
+
+  ipcMain.handle("fg:show-notification", (_event, payload: unknown): NotificationResult => {
+    if (typeof payload !== "object" || payload === null) {
+      throw new Error("Invalid notification payload: must be an object");
+    }
+    return notificationManager.showNotification(payload as NativeNotificationOptions);
+  });
+
   // ─── Error Logging ────────────────────────────────────────────────────────
 
   ipcMain.handle("fg:log-error", (_event, message: unknown): { success: boolean } => {
@@ -84,3 +139,4 @@ export function registerIpcHandlers(
     return { success: true };
   });
 }
+

@@ -11,6 +11,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { getAssistantService } from "../services/serviceManager";
+import { notificationService } from "../services/notificationService";
 import { useAppStore } from "../store/appStore";
 import type { AttentionEvent, InterventionDecision } from "../types/contracts";
 
@@ -83,6 +84,18 @@ export function useIntervention(): {
       if (decision.shouldIntervene && decision.level !== "LEVEL_0_NONE") {
         setActiveIntervention(decision);
         dispatch({ type: "SET_ASSISTANT_CONNECTED", connected: true });
+
+        // Dispatch native OS desktop notification matching intervention category
+        const taskGoal = state.currentSession?.task;
+        if (decision.level === "LEVEL_1_GENTLE_REMINDER") {
+          void notificationService.notifyFocusReminder(taskGoal);
+        } else if (decision.level === "LEVEL_2_RECOVERY_SUGGESTION") {
+          void notificationService.notifyDistraction(taskGoal);
+        } else if (decision.level === "LEVEL_3_ASSISTANCE") {
+          void notificationService.notifyStuckHelp(decision.message || undefined);
+        } else if (decision.level === "LEVEL_4_BREAK_SUGGESTION") {
+          void notificationService.notifyBreakSuggestion(decision.suggestedBreakMinutes ?? 5);
+        }
       }
     } catch (err) {
       console.warn("[useIntervention] Assistant query error:", err);
@@ -90,7 +103,7 @@ export function useIntervention(): {
     } finally {
       isCheckingRef.current = false;
     }
-  }, [isSessionRunning, activeIntervention, state.preferences.notificationsEnabled, dispatch]);
+  }, [isSessionRunning, activeIntervention, state.preferences.notificationsEnabled, state.currentSession?.task, dispatch]);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -105,8 +118,10 @@ export function useIntervention(): {
   }, []);
 
   const triggerManualIntervention = useCallback((customDecision?: InterventionDecision) => {
+    const taskGoal = state.currentSession?.task;
     if (customDecision) {
       setActiveIntervention(customDecision);
+      void notificationService.notifyDistraction(taskGoal, true);
     } else {
       // Trigger a default Level 2 suggestion
       setActiveIntervention({
@@ -123,8 +138,9 @@ export function useIntervention(): {
           { actionId: "dismiss", label: "Dismiss" },
         ],
       });
+      void notificationService.notifyDistraction(taskGoal, true);
     }
-  }, []);
+  }, [state.currentSession?.task]);
 
   const isSuppressed = useCallback(() => {
     return Date.now() < suppressedUntilRef.current;

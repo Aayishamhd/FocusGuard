@@ -17,6 +17,11 @@ import { setupTray } from "./tray";
 // Force dark mode at OS level
 nativeTheme.themeSource = "dark";
 
+// Set Application User Model ID for Windows toast notifications
+if (process.platform === "win32") {
+  app.setAppUserModelId("com.focusguard.desktop");
+}
+
 const isDev = process.env["NODE_ENV"] === "development";
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
 
@@ -29,7 +34,11 @@ function createWindow(): void {
     minWidth: 800,
     minHeight: 600,
     frame: false,
-    titleBarStyle: "hiddenInset",
+    resizable: true,
+    movable: true,
+    minimizable: true,
+    maximizable: true,
+    closable: true,
     backgroundColor: "#0d0f14",
     webPreferences: {
       preload: path.join(__dirname, "../preload/index.js"),
@@ -39,6 +48,15 @@ function createWindow(): void {
       webSecurity: true,
     },
     show: false,
+  });
+
+  // Track and notify renderer of maximize/unmaximize states
+  mainWindow.on("maximize", () => {
+    mainWindow?.webContents.send("fg:window-maximized-change", true);
+  });
+
+  mainWindow.on("unmaximize", () => {
+    mainWindow?.webContents.send("fg:window-maximized-change", false);
   });
 
   // Show window once ready to avoid white flash
@@ -69,7 +87,7 @@ function createWindow(): void {
 
 app.whenReady().then(() => {
   createWindow();
-  registerIpcHandlers(ipcMain);
+  registerIpcHandlers(ipcMain, undefined, () => mainWindow);
   if (mainWindow) setupTray(mainWindow);
 
   app.on("activate", () => {

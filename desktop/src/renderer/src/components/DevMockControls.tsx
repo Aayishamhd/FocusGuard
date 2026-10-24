@@ -13,8 +13,10 @@ import {
   Scissors,
   FileQuestion,
   BellOff,
+  Bell,
 } from "lucide-react";
 import type { AttentionState, InterventionLevel } from "../types/contracts";
+import { notificationService } from "../services/notificationService";
 import {
   getMockEngineClient,
   getMockAssistantClient,
@@ -315,6 +317,72 @@ export function DevMockControls({
                 Open Decompose Modal
               </button>
             )}
+          </div>
+        </div>
+
+        {/* 5. Native Desktop Notifications (OS-level) */}
+        <div className="dev-controls-card__group">
+          <span className="dev-controls-card__sublabel">Native Desktop Notifications (OS-level):</span>
+          <div className="dev-controls-card__btn-row">
+            <button
+              id="dev-notify-reminder"
+              className="btn btn-sm btn-ghost"
+              onClick={() => void notificationService.notifyFocusReminder(undefined, true)}
+              title="Test Focus Reminder Notification"
+            >
+              <Bell size={12} />
+              Test Reminder
+            </button>
+
+            <button
+              id="dev-notify-distraction"
+              className="btn btn-sm btn-ghost"
+              onClick={() => void notificationService.notifyDistraction(undefined, true)}
+              title="Test Distraction Notification"
+            >
+              <Bell size={12} />
+              Test Distraction
+            </button>
+
+            <button
+              id="dev-notify-recovery"
+              className="btn btn-sm btn-ghost"
+              onClick={() => void notificationService.notifyRecovery(undefined, true)}
+              title="Test Recovery Notification"
+            >
+              <Bell size={12} />
+              Test Recovery
+            </button>
+
+            <button
+              id="dev-notify-stuck"
+              className="btn btn-sm btn-ghost"
+              onClick={() => void notificationService.notifyStuckHelp(undefined, true)}
+              title="Test Stuck / AI Help Notification"
+            >
+              <Bell size={12} />
+              Test Stuck / AI Help
+            </button>
+
+            <button
+              id="dev-notify-break"
+              className="btn btn-sm btn-ghost"
+              onClick={() => void notificationService.notifyBreakSuggestion(5, true)}
+              title="Test Break Notification"
+            >
+              <Coffee size={12} />
+              Test Break
+            </button>
+
+            <button
+              id="dev-notify-complete"
+              className="btn btn-sm btn-ghost"
+              onClick={() => void notificationService.notifySessionCompleted("25 mins", true)}
+              title="Test Session Completed Notification"
+            >
+              <Sparkles size={12} />
+              Test Complete
+            </button>
           </div>
         </div>
       </div>

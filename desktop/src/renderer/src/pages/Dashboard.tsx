@@ -26,6 +26,7 @@ import { RecoveryModal } from "../components/RecoveryModal";
 import { BreakMode } from "../components/BreakMode";
 import { TaskDecomposeModal } from "../components/TaskDecomposeModal";
 import { useSessionTimer, validateTaskInput, MAX_TASK_LENGTH } from "../services/sessionTimer";
+import { notificationService } from "../services/notificationService";
 import type { InterventionLevel, SubTask } from "../types/contracts";
 
 export function Dashboard(): JSX.Element {
@@ -83,6 +84,7 @@ export function Dashboard(): JSX.Element {
     setTaskValidationError(null);
     startSession(validation.trimmed);
     setTaskInput("");
+    void notificationService.notifySessionStarted(validation.trimmed);
     await startMonitoring();
   }, [taskInput, startSession, startMonitoring]);
 
@@ -123,9 +125,10 @@ export function Dashboard(): JSX.Element {
   const handleConfirmEndSession = useCallback(() => {
     setShowEndConfirm(false);
     dismissIntervention();
+    void notificationService.notifySessionCompleted(formattedTime);
     endSession();
     pauseMonitoring().catch(() => {});
-  }, [endSession, pauseMonitoring, dismissIntervention]);
+  }, [endSession, formattedTime, pauseMonitoring, dismissIntervention]);
 
   // ─── Break Mode Workflows ─────────────────────────────────────────────────
 
