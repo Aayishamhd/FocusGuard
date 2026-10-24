@@ -1,241 +1,172 @@
 # FocusGuard — Feature 3: Desktop UX, Data, Analytics & Integration
 
-## Antigravity Prompt
+## 1. Ownership & Parallel Development Sandbox
 
-You own **Feature 3: Desktop UX, Data, Analytics & Integration**.
+> **Branch Name**: `feat/desktop-app`  
+> **Dedicated Directory**: `/desktop` (All Electron code, UI components, tests, and dependencies **must** reside here)  
+> **Integration Targets**: Feature 1 (`http://127.0.0.1:5001`), Feature 2 (`http://127.0.0.1:5002`)  
+> **Shared Contract**: Reference [`SHARED_CONTRACTS.md`](file:///c:/Users/ASUS/OneDrive/Desktop/FocusGuard/docs/SHARED_CONTRACTS.md) for data schemas.
 
-Turn the attention engine and AI assistant into a polished, usable desktop product.
+### ⚠️ Strict Sandbox Directive for AI Agents and Developers
+- **ALLOWED**: Create, modify, and delete files inside `/desktop/**` ONLY.
+- **FORBIDDEN**:
+  - Do NOT touch `/engine/**` or `/assistant/**`.
+  - Do NOT modify root configuration files (`package.json`, `.gitignore`, `README.md`) without team consensus.
+  - Do NOT re-implement native window tracking or LLM prompt logic inside Electron.
+- **Dependencies**: Keep all dependencies isolated inside `/desktop/package.json`.
 
-### Own these features
+---
 
-- Electron desktop application
-- Main dashboard
-- Focus session controls
-- Current task UI
-- Attention status
-- Intervention UI
-- Focus recovery UI
-- Task breakdown UI
-- Break mode
-- Settings
-- Privacy controls
-- Local persistence
-- Focus session history
-- Focus analytics
-- Pattern/insight presentation
-- Integration with Feature 1
-- Integration with Feature 2
+## 2. Mission & Responsibilities
 
-### Main journey
+Turn the background attention engine and the AI assistant into a polished, fluid, and human-centered desktop application.
 
-```text
-Open FocusGuard
-      ↓
-Choose monitoring/privacy settings
-      ↓
-Enter a task
-      ↓
-Start focus session
-      ↓
-Attention engine runs
-      ↓
-AI decides whether intervention is useful
-      ↓
-User receives gentle assistance
-      ↓
-Recover / ask for help / take a break
-      ↓
-Session ends
-      ↓
-Analytics and positive insight
+### In Scope (Your Responsibilities)
+- Electron desktop shell (Main process, Preload script, Renderer process).
+- Main focus dashboard:
+  - Current task display & editable input.
+  - Focus session timer (Start, Pause, Resume, Stop).
+  - Attention state indicator (color + text icon for accessibility).
+  - Task breakdown checklist with active step indicator.
+  - Subtle floating widget / tray menu.
+- Non-intrusive intervention notifications and gentle overlay modals.
+- Focus Recovery UI ("What happened?" with instant recovery choices).
+- Break mode overlay with calming timer.
+- Settings & Privacy Center (Webcam on/off toggle, Pause monitoring, Clear data).
+- Local data persistence (SQLite or typed local JSON file) for session history.
+- Analytics dashboard (focused hours, fragmented intervals, recovery count, positive insights).
+- **Mock-First Architecture**: Built-in mock clients for Feature 1 and Feature 2 so the UI can be developed, demonstrated, and validated immediately without waiting for other branches.
+
+### Out of Scope (Owned by Other Branches)
+- Native OS window hooks, raw idle time listeners, and OpenCV/MediaPipe (Feature 1).
+- Ollama prompts, model guardrails, and task decomposition LLM logic (Feature 2).
+
+---
+
+## 3. Mock-First Architecture (Zero-Block Parallel Workflow)
+
+To develop and test the entire UI in parallel without waiting for teammates:
+
+Implement an adapter layer in `desktop/src/services/`:
+
+```typescript
+// desktop/src/services/serviceManager.ts
+import { LiveEngineClient, MockEngineClient } from './engineClient';
+import { LiveAssistantClient, MockAssistantClient } from './assistantClient';
+
+const USE_MOCKS = process.env.VITE_USE_MOCKS === 'true' || true; // Default to true until integrated
+
+export const engineService = USE_MOCKS ? new MockEngineClient() : new LiveEngineClient('http://127.0.0.1:5001');
+export const assistantService = USE_MOCKS ? new MockAssistantClient() : new LiveAssistantClient('http://127.0.0.1:5002');
 ```
 
-### Dashboard
+### Benefits of the Mock Client:
+- **Instant Testing**: Simulate attention state shifts (`FOCUSED` → `DISTRACTED` → `RECOVERING`) with a simple UI dropdown or hotkey.
+- **Reliable Demos**: Test interventions and recovery screens without having to open YouTube or trigger OS events.
+- **Zero Blocker**: The UI team can finish 100% of their acceptance criteria even if teammates are still working on their branches.
+- **Seamless Switch**: When `feat/attention-engine` and `feat/ai-assistant` are ready, simply flip `USE_MOCKS=false`.
 
-Clearly show:
+---
 
-- Current task
-- Focus timer
-- Current attention state
-- Start/pause/stop
-- Latest intervention
-- Recovery action
-- Break action
-- Task steps
-- Session summary
-
-Avoid overwhelming users with internal technical data.
-
-### Intervention UI
-
-Example:
-
-> **Looks like your focus may have drifted.**
->
-> Want to return to your presentation?
+## 4. User Journey & UI Components
 
 ```text
-[Return] [I'm stuck] [Take a break] [Dismiss]
+┌────────────────────────────────────────────────────────┐
+│  FocusGuard Dashboard                                  │
+│                                                        │
+│  Current Task: [ Complete project documentation     ]  │
+│  Session Timer:  24:18  (● FOCUSED)                    │
+│  [ Pause ]  [ End Session ]                            │
+│                                                        │
+│  Subtasks:                                             │
+│  [✓] 1. Define problem & audience (5m)                 │
+│  [●] 2. Outline key components (10m)    ◄ Active Step  │
+│  [ ] 3. Write integration guide (15m)                  │
+│                                                        │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │ Recent Insight:                                  │  │
+│  │ "You've stayed focused 85% of this session!"     │  │
+│  └──────────────────────────────────────────────────┘  │
+│                                                        │
+│  Privacy: Monitoring [Active] | Camera [Off]           │
+└────────────────────────────────────────────────────────┘
 ```
 
-Never trap the user.
+### 4.1 Gentle Intervention Modal
+Triggered when Feature 2 returns `shouldIntervene: true`:
+- Non-blocking, gentle toast or corner overlay.
+- Clear action buttons matching [`SHARED_CONTRACTS.md`](file:///c:/Users/ASUS/OneDrive/Desktop/FocusGuard/docs/SHARED_CONTRACTS.md):
+  - `[Return to Task]`
+  - `[Break Down Task]`
+  - `[Take a Break]`
+  - `[Dismiss]`
 
-### Recovery UI
+### 4.2 Focus Recovery Modal
+- Displayed when user clicks "I'm stuck" or accepts a recovery prompt:
+  - Choices: `[Tired]`, `[Task is confusing]`, `[Got distracted]`, `[Need a break]`.
+  - Displays instant supportive feedback from Feature 2.
 
-Render:
+### 4.3 Analytics & Self-Understanding
+- **Focus Time vs. Fragmented Time** (e.g. 2h 15m focused, 25m fragmented).
+- **Recovery Count**: Number of times the user successfully refocused.
+- **Empathetic Insights**: Highlights wins rather than punitive scores (e.g. "Longest uninterrupted focus session this week").
+
+---
+
+## 5. Local Data Storage & Privacy
+
+- Store user data locally inside the user data directory:
+  - Preferences: `{ webcamEnabled: boolean, notifications: boolean }`
+  - Sessions: `id, task, startTime, endTime, totalFocusSeconds, recoveryCount`
+  - Interventions: `timestamp, triggerReason, userAction`
+- **Zero Raw Video**: Never attempt to capture or store raw webcam footage.
+- **One-Click Data Purge**: Provide a "Clear All Stored History" button in Settings.
+
+---
+
+## 6. Directory Structure for `/desktop`
 
 ```text
-What happened?
-
-[I'm tired]
-[The task is confusing]
-[I got distracted]
-[I need a break]
-[Something else]
+desktop/
+├── src/
+│   ├── main/
+│   │   ├── index.ts               # Electron main process & window lifecycle
+│   │   ├── ipcHandlers.ts         # IPC bridge for local storage & service calls
+│   │   └── tray.ts                # System tray icon and quick actions
+│   ├── preload/
+│   │   └── index.ts               # Context isolation & secure IPC exposure
+│   ├── renderer/
+│   │   ├── index.html             # Main entrypoint
+│   │   ├── src/
+│   │   │   ├── components/
+│   │   │   │   ├── Dashboard.tsx  # Focus timer, active task, attention status
+│   │   │   │   ├── SubtaskList.tsx# Task breakdown checklist
+│   │   │   │   ├── Intervention.tsx# Non-intrusive nudge toast
+│   │   │   │   ├── RecoveryModal.tsx# "What happened?" recovery dialog
+│   │   │   │   ├── BreakMode.tsx  # Calming break screen
+│   │   │   │   ├── Analytics.tsx  # Empathetic focus trends & insights
+│   │   │   │   └── Settings.tsx   # Privacy toggles (webcam, pause, clear data)
+│   │   │   ├── services/
+│   │   │   │   ├── engineClient.ts# Live SSE/HTTP client for port 5001
+│   │   │   │   ├── assistantClient.ts # Live REST client for port 5002
+│   │   │   │   ├── mockEngineClient.ts # Synthetic event emitter for offline dev
+│   │   │   │   └── mockAssistantClient.ts # Mock AI responses for offline dev
+│   │   │   └── store/             # Local state & persistence
+│   │   └── styles/                # Clean, premium styling
+│   └── tests/
+│       ├── unit/                  # Component and store tests
+│       └── mockValidation.test.ts # Verify mock payloads match SHARED_CONTRACTS.md
+├── package.json                   # Electron, React/Vue/Vite, Tailwind/CSS deps
+└── README.md                      # Instructions to launch dev server & toggle mocks
 ```
 
-Then display the AI response and make continuing frictionless.
+---
 
-### Task breakdown UI
+## 7. Pre-Merge Checklist for `feat/desktop-app`
 
-If the AI returns:
-
-```text
-1. Define the problem
-2. Explain the solution
-3. Create architecture
-4. Prepare demo
-```
-
-display the steps as actionable items and let the user select the current step.
-
-### Analytics
-
-Avoid simplistic productivity scores such as:
-
-> Productivity: 42/100
-
-Prefer:
-
-```text
-Focused: 2h 14m
-Fragmented: 47m
-Recovery moments: 3
-```
-
-Useful insight:
-
-> Your attention tends to drift when switching between multiple tasks.
-
-Positive insight:
-
-> You completed your longest uninterrupted focus session this week.
-
-Analytics should support self-understanding, not judgment.
-
-### Local data
-
-Persist only what the MVP needs:
-
-- User preferences
-- Focus sessions
-- Aggregated attention events
-- Intervention history
-- Tasks
-- Recovery events
-- Break events
-- Aggregated patterns
-
-Never store raw webcam frames.
-
-### Privacy controls
-
-Provide obvious controls for:
-
-- Monitoring on/off
-- Webcam on/off
-- Pause monitoring
-- Data/settings management
-- Explanation of local processing
-- Explanation of stored data
-
-The user must always know whether monitoring is active.
-
-### Integration
-
-Consume Feature 1:
-
-- Attention state
-- Confidence
-- Active application
-- Recent activity/switching signals
-- Session information
-
-Consume Feature 2:
-
-- Intervention actions
-- AI messages
-- Task steps
-- Recovery assistance
-- Break recommendations
-- Personalization updates
-
-Do not duplicate their internal logic.
-
-### Reliability
-
-Handle:
-
-- AI unavailable
-- Ollama unavailable
-- Webcam unavailable
-- Permission denied
-- Monitoring paused
-- Invalid AI response
-- Slow AI response
-- Empty task
-- Session interruption
-- Monitoring failure
-
-Every asynchronous AI operation needs a loading state and an error/retry path where appropriate.
-
-### Accessibility and UX
-
-Use:
-
-- Clear typography
-- Strong hierarchy
-- Keyboard-friendly controls
-- Readable notifications
-- Responsive layout
-- Clear active/inactive states
-- Non-color-only status indicators
-- Minimal interaction friction
-
-The product should feel like a real desktop application, not a static hackathon dashboard.
-
-### Acceptance criteria
-
-1. User can start/stop a focus session.
-2. User can enter a task.
-3. Attention state is visible.
-4. AI interventions appear correctly.
-5. Recovery flow works end-to-end.
-6. Task breakdown is displayed and actionable.
-7. Break mode works.
-8. Settings and privacy controls work.
-9. Sessions persist locally.
-10. Basic analytics are displayed.
-11. Loading/error states exist.
-12. App remains usable when AI/webcam services are unavailable.
-13. Full demo works without manually editing data.
-
-### Antigravity instruction
-
-Inspect the repository before changing architecture.
-
-Do not create fake monitoring values or fake AI responses for the main demo path.
-
-Use Feature 1 and Feature 2 through their documented interfaces.
-
-Prioritize a polished, reliable end-to-end journey over secondary screens.
+- [ ] All code, styles, and assets are isolated strictly inside `/desktop`.
+- [ ] No files in `/engine`, `/assistant`, or root files were edited.
+- [ ] App launches and functions smoothly in Mock Mode (`npm run dev`).
+- [ ] All UI schemas conform to `SHARED_CONTRACTS.md`.
+- [ ] End-to-end user journey works: Start session → Task breakdown → Intervention → Recovery → Analytics.
+- [ ] `git status` shows changes ONLY under `desktop/`.

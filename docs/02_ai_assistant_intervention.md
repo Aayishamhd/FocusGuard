@@ -1,196 +1,197 @@
 # FocusGuard — Feature 2: AI Assistant & Human-Centered Intervention
 
-## Antigravity Prompt
+## 1. Ownership & Parallel Development Sandbox
 
-You own **Feature 2: AI Assistant & Human-Centered Intervention**.
+> **Branch Name**: `feat/ai-assistant`  
+> **Dedicated Directory**: `/assistant` (All code, prompts, tests, and dependencies **must** reside here)  
+> **Service Port**: `http://127.0.0.1:5002`  
+> **Shared Contract**: Reference [`SHARED_CONTRACTS.md`](file:///c:/Users/ASUS/OneDrive/Desktop/FocusGuard/docs/SHARED_CONTRACTS.md) for request/response schemas.
 
-Build the AI reasoning layer that converts attention/context signals into useful, gentle assistance.
+### ⚠️ Strict Sandbox Directive for AI Agents and Developers
+- **ALLOWED**: Create, modify, and delete files inside `/assistant/**` ONLY.
+- **FORBIDDEN**:
+  - Do NOT touch `/engine/**` or `/desktop/**`.
+  - Do NOT modify root configuration files (`package.json`, `.gitignore`, `README.md`) without team consensus.
+  - Do NOT directly manipulate Electron UI code or native window hooks.
+- **Dependencies**: Keep all dependencies isolated inside `/assistant/requirements.txt` (Python) or `/assistant/package.json` (Node.js).
 
-### Own these features
+---
 
-- Ollama/local LLM integration
-- Task decomposition
-- First-step assistance
-- Context-aware intervention decisions
-- Intervention levels
-- Focus recovery
-- Break suggestions
-- User feedback handling
-- Personalization of intervention style
-- Prompt/system architecture
-- AI guardrails
-- Model-output validation
+## 2. Mission & Responsibilities
 
-### Core principle
+Build the local AI reasoning service that converts raw attention events into gentle, actionable, and human-centered support.
 
-FocusGuard helps people **recover focus**, not punish distraction.
+### In Scope (Your Responsibilities)
+- Ollama / local LLM integration (default: `llama3.2`, `mistral`, or `phi3`).
+- Context-aware intervention decider (determining whether intervention is warranted).
+- Task decomposition engine (breaking large goals into actionable, bite-sized steps).
+- Smallest immediate next-step generation.
+- Focus recovery coaching (supportive guidance when focus drifts).
+- AI safety guardrails, schema enforcement, and JSON validation.
+- Offline heuristic fallback (ensures the service works even if Ollama is not installed).
+- Exposing a local HTTP REST service on port `5002`.
+- Providing an offline event-replay harness so you can test prompts without running the engine.
 
-The AI should:
+### Out of Scope (Owned by Other Branches)
+- Active window tracking, mouse/keyboard listeners, and MediaPipe webcam processing (Feature 1).
+- Electron UI components, notifications, modals, and tray controls (Feature 3).
+- SQLite session storage and persistent UI analytics (Feature 3).
 
-- Understand, not judge
-- Assist, not control
-- Support, not constantly interrupt
-- Personalize, not prescribe
-- Protect, not unnecessarily collect
+---
 
-### Intervention levels
+## 3. Intervention Levels & Philosophy
 
-```text
-LEVEL 0 — NO INTERVENTION
-LEVEL 1 — GENTLE REMINDER
-LEVEL 2 — RECOVERY SUGGESTION
-LEVEL 3 — ASSISTANCE
-LEVEL 4 — BREAK SUGGESTION
-```
+FocusGuard is built to **help users recover focus**, never to punish or shame them.
 
-Examples:
+| Level | Name | Typical Trigger | User-Facing Example |
+|---|---|---|---|
+| **Level 0** | NO_INTERVENTION | Stable work, brief productive lookup | *(Silent)* |
+| **Level 1** | GENTLE_REMINDER | Slight drift, 2+ min idle on browser | "Looks like your attention may have shifted." |
+| **Level 2** | RECOVERY_SUGGESTION | Sustained leisure app switching | "Want to return to your coding task?" |
+| **Level 3** | ASSISTANCE | Prolonged hesitation / stuck state | "This task seems heavy. Want to break it into 3 small steps?" |
+| **Level 4** | BREAK_SUGGESTION | > 90 min continuous high focus or fatigue | "You've been in deep focus for 90 minutes. Would a 5-minute break recharge you?" |
 
-```text
-Level 1:
-"Looks like your focus may have drifted."
+---
 
-Level 2:
-"Want to return to the task you were working on?"
+## 4. Frozen Service API Endpoints (`http://127.0.0.1:5002`)
 
-Level 3:
-"This task seems difficult to get started with. Want me to break it into smaller steps?"
+Feature 2 exposes standard HTTP endpoints matching [`SHARED_CONTRACTS.md`](file:///c:/Users/ASUS/OneDrive/Desktop/FocusGuard/docs/SHARED_CONTRACTS.md):
 
-Level 4:
-"You've been working for a while. Would a short break help?"
-```
-
-Do not interrupt simply because an attention event arrived. The AI must decide whether intervention is useful.
-
-### Task decomposition
-
-Input:
-
-> Build the project presentation.
-
-Output should be actionable:
-
-```text
-1. Define the problem
-2. Explain the solution
-3. Create the architecture
-4. Explain the AI pipeline
-5. Prepare the demo
-6. Add results
-7. Practice the presentation
-```
-
-Also support a smallest useful next action.
-
-### Focus Recovery Mode
-
-Support:
-
-```text
-Focus seems to have drifted. No worries.
-
-What happened?
-
-[I'm tired]
-[The task is confusing]
-[I got distracted]
-[I need a break]
-[Something else]
-```
-
-Examples:
-
-- Confusing → simplify/decompose the task.
-- Tired → suggest a short break.
-- Distracted → help return to the previous task.
-- Need a break → enter break mode.
-
-Never assume why the user was distracted.
-
-### Prompt architecture
-
-Do not use one giant prompt.
-
-Create separate structured prompts/system instructions for:
-
-1. Task decomposition
-2. First-step generation
-3. Intervention decision
-4. Recovery assistance
-5. Personalized recommendations
-6. Focus insight generation
-
-Prefer structured model outputs and validate them before the UI receives them.
-
-### AI safety
-
-Never make unsupported claims such as:
-
-> "You're distracted because you're anxious."
-
-Prefer:
-
-> "Your activity suggests your attention may have shifted. I can't know why. Would you like to tell me?"
-
-Do not diagnose or make medical/psychological claims.
-
-Do not shame the user.
-
-Do not fabricate observations that were not provided by the context engine.
-
-### Personalization
-
-Support styles such as:
-
-```text
-Gentle
-Minimal
-Motivational
-Silent
-More frequent
-Only when necessary
-```
-
-Use feedback such as accepted/dismissed interventions, requests for help, breaks, and successful recovery to adjust future assistance.
-
-### Integration contract
-
-Consume Feature 1 events and produce structured actions for Feature 3.
-
-Example:
-
+### 4.1 `GET /health`
+Returns LLM connectivity status and loaded model:
 ```json
 {
-  "action": "RECOVERY_SUGGESTION",
-  "message": "Want to return to your last task?",
-  "reason": "sustained_attention_drift",
-  "priority": "low"
+  "status": "ok",
+  "llmConnected": true,
+  "model": "llama3.2",
+  "fallbackMode": false
 }
 ```
 
-Do not directly manipulate Electron UI components.
+### 4.2 `POST /api/intervene`
+Evaluates an incoming `AttentionEvent` and returns whether and how to nudge the user:
+- **Request Body**: `AttentionEvent` (from Feature 1 / Desktop)
+- **Response**: `InterventionDecision`
+```json
+{
+  "decisionId": "dec-1092-b4",
+  "timestamp": "2026-10-24T21:55:00.000Z",
+  "shouldIntervene": true,
+  "level": "LEVEL_2_RECOVERY_SUGGESTION",
+  "triggerReason": "User switched to YouTube for 4 minutes during focus session",
+  "message": "Focus drifted over to YouTube. Ready to jump back to writing your presentation?",
+  "actions": [
+    { "actionId": "return_to_task", "label": "Back to Presentation" },
+    { "actionId": "break_down_task", "label": "Break into Smaller Steps" },
+    { "actionId": "take_break", "label": "Take a 5-min Break" },
+    { "actionId": "dismiss", "label": "Still Working" }
+  ]
+}
+```
 
-### Acceptance criteria
+### 4.3 `POST /api/decompose`
+Decomposes an intimidating or vague task:
+- **Request Body**: `TaskDecompositionRequest` (`{ "taskDescription": "Complete final project report" }`)
+- **Response**: `TaskDecompositionResponse`
+```json
+{
+  "originalTask": "Complete final project report",
+  "subtasks": [
+    {
+      "stepNumber": 1,
+      "title": "Open document and write introduction",
+      "description": "Outline the 3 main goals in 2 paragraphs.",
+      "estimatedMinutes": 10,
+      "isImmediateNextStep": true
+    },
+    {
+      "stepNumber": 2,
+      "title": "Compile data graphs",
+      "description": "Insert performance charts from test results.",
+      "estimatedMinutes": 15,
+      "isImmediateNextStep": false
+    }
+  ]
+}
+```
 
-1. Ollama/local LLM works through a clean service layer.
-2. Large tasks can be decomposed.
-3. A smallest useful next action can be generated.
-4. Attention events can trigger intervention decisions.
-5. The system can choose not to intervene.
-6. Recovery reasons produce different assistance.
-7. Break suggestions work.
-8. User feedback can influence future intervention behavior.
-9. Invalid/unsafe model output is handled.
-10. Prompts and guardrails are documented.
-11. Main demo uses real AI, not hardcoded AI responses.
+### 4.4 `POST /api/recover`
+Processes user feedback after attention drift:
+- **Request Body**: `RecoveryFeedbackRequest` (`{ "userReason": "tired" | "task_confusing" | "distracted" | "need_break" }`)
+- **Response**: `RecoveryFeedbackResponse`
 
-### Antigravity instruction
+---
 
-Inspect the repository and Feature 1 event contract before coding.
+## 5. Offline & Heuristic Fallback (Zero-Block Guarantee)
 
-Do not duplicate attention detection logic.
+To guarantee that Feature 3 teammates can run end-to-end flows even if Ollama is not installed or the local LLM takes too long to load:
+1. Check `http://127.0.0.1:11434/api/tags` on startup.
+2. If Ollama is unreachable or times out (> 3 seconds), switch to **Heuristic Rule Engine**.
+3. Fallback uses template rules:
+   - Distracted -> returns Level 2 nudge with task resume prompt.
+   - Task decompose -> splits tasks by conjunctions or standard 4-step template.
+   - Recovery "tired" -> recommends 5-min break.
+4. **Never return a 500 error** to the Desktop UI; always deliver a graceful response adhering to the contract.
 
-Do not build the dashboard.
+---
 
-Focus on the AI/service layer and expose stable interfaces for Electron.
+## 6. Prompt Engineering & AI Safety Guardrails
 
-Prioritize reliable end-to-end flows over experimental features.
+### Core Safety Rules
+1. **No Psychological/Medical Diagnoses**: Never say "You are depressed/ADHD/anxious". Use factual observations: "Your active window shifted".
+2. **No User Shaming**: Replace "You are wasting time" with "Would you like help returning to your goal?".
+3. **Strict JSON Schema Enforcement**: Always prompt Ollama with a strict JSON format instruction and parse with fallback regex to strip markdown code fences.
+
+---
+
+## 7. Parallel Test Harness
+
+Feature 2 includes a replay script in `assistant/mocks/replay_events` so you can develop without Feature 1 running:
+
+```bash
+# Replay synthetic events to test intervention logic
+python assistant/mocks/replay_events.py --scenario heavy-distraction
+python assistant/mocks/test_ollama_prompts.py --task "Prepare presentation"
+```
+
+---
+
+## 8. Directory Structure for `/assistant`
+
+```text
+assistant/
+├── src/
+│   ├── llm/
+│   │   ├── ollama_client.py       # Local Ollama HTTP client with timeout & retry
+│   │   └── fallback_heuristics.py # Offline rule-based fallbacks
+│   ├── prompts/
+│   │   ├── task_decomposition.py  # Prompt template & output schema
+│   │   ├── intervention.py        # Decision logic prompt
+│   │   └── recovery.py            # Recovery guidance prompt
+│   ├── guardrails/
+│   │   ├── output_validator.py    # Schema validation & JSON parser
+│   │   └── safety_filter.py       # Strips shaming or diagnostic language
+│   ├── services/
+│   │   └── assistant_service.py   # Core coordinator
+│   └── server.py                  # Local HTTP server (Port 5002)
+├── mocks/
+│   ├── sample_events.json         # Replay data from Feature 1
+│   └── replay_events.py           # Test runner feeding sample events
+├── tests/
+│   ├── test_prompts.py            # Unit tests for prompt generation
+│   ├── test_fallback.py           # Unit tests for offline heuristics
+│   └── test_guardrails.py         # Ensure unsafe model outputs are caught
+├── requirements.txt / package.json
+└── README.md                      # Instructions on Ollama setup and testing
+```
+
+---
+
+## 9. Pre-Merge Checklist for `feat/ai-assistant`
+
+- [ ] All code and prompts are isolated strictly inside `/assistant`.
+- [ ] No files in `/engine`, `/desktop`, or root files were edited.
+- [ ] Service starts cleanly on port `5002` and handles all endpoints.
+- [ ] Heuristic fallback works when Ollama is offline.
+- [ ] All responses conform to schemas in `SHARED_CONTRACTS.md`.
+- [ ] `git status` shows changes ONLY under `assistant/`.
