@@ -168,11 +168,7 @@
   margin-top: var(--space-1);
 }
 
-.dashboard__start-form {
-  display: flex;
-  gap: var(--space-3);
-  align-items: center;
-}
+/* Note: .dashboard__start-form is defined in the Task Card & Start Form section below */
 
 .dashboard__controls {
   display: flex;
@@ -565,18 +561,88 @@
   font-size: 12px;
   margin-top: 4px;
 }
-.dashboard__guidance {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-bottom: var(--space-2);
-}
-.dashboard__input-row {
+/* ─── Task Card & Start Form ──────────────────────────────── */
+.dashboard__start-form {
   display: flex;
+  flex-direction: column;
   gap: var(--space-3);
   width: 100%;
 }
-.dashboard__input-row .input {
-  flex: 1;
+.dashboard__guidance {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+.dashboard__input-row {
+  display: flex;
+  width: 100%;
+}
+.dashboard__input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.dashboard__focal-input {
+  width: 100%;
+  padding: 12px 42px 12px 14px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  background: var(--bg-base);
+  border: 1px solid var(--border-normal);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.dashboard__focal-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.dashboard__focal-input:focus {
+  outline: none;
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+.dashboard__clear-goal-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+.dashboard__clear-goal-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-hover);
+}
+.dashboard__clear-goal-btn:focus-visible {
+  outline: 2px solid var(--accent-500);
+  outline-offset: 1px;
+}
+.dashboard__start-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+.dashboard__char-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ─── Session Controls & Timer ────────────────────────────── */

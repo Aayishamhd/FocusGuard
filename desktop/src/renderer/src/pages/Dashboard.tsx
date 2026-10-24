@@ -312,22 +312,46 @@ export function Dashboard(): JSX.Element {
                   Define an intentional, single-task goal to anchor your focus block.
                 </p>
                 <div className="dashboard__input-row">
-                  <input
-                    id="task-input"
-                    className="input"
-                    type="text"
-                    placeholder="e.g. Prepare my project presentation..."
-                    value={taskInput}
-                    maxLength={MAX_TASK_LENGTH}
-                    onChange={(e) => {
-                      setTaskInput(e.target.value);
-                      setTaskValidationError(null);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") void handleStart();
-                    }}
-                    aria-label="New focus task goal"
-                  />
+                  <div className="dashboard__input-wrapper">
+                    <input
+                      id="task-input"
+                      className="input dashboard__focal-input"
+                      type="text"
+                      placeholder="e.g. Prepare my final-year project presentation..."
+                      value={taskInput}
+                      maxLength={MAX_TASK_LENGTH}
+                      onChange={(e) => {
+                        setTaskInput(e.target.value);
+                        setTaskValidationError(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") void handleStart();
+                        if (e.key === "Escape") setTaskInput("");
+                      }}
+                      aria-label="New focus task goal"
+                    />
+                    {taskInput.length > 0 && (
+                      <button
+                        type="button"
+                        id="btn-clear-goal"
+                        className="dashboard__clear-goal-btn"
+                        onClick={() => {
+                          setTaskInput("");
+                          setTaskValidationError(null);
+                        }}
+                        title="Clear focus goal"
+                        aria-label="Clear focus goal"
+                      >
+                        <X size={15} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="dashboard__start-actions">
+                  <span className="dashboard__char-count" aria-live="polite">
+                    {taskInput.length}/{MAX_TASK_LENGTH}
+                  </span>
                   <button
                     id="start-session"
                     className="btn btn-primary btn-lg"
@@ -338,6 +362,7 @@ export function Dashboard(): JSX.Element {
                     Start Session
                   </button>
                 </div>
+
                 {taskValidationError && (
                   <p className="validation-error" role="alert">
                     {taskValidationError}
