@@ -67,7 +67,7 @@ class AssistantService:
         """
         Reports service health, LLM connectivity, and whether running in fallback mode.
         """
-        is_online = await ollama_client.is_available()
+        is_online = await ollama_client.is_connected()
         fallback_mode = settings.force_fallback or not is_online
         return HealthResponse(
             status="ok",

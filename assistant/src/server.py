@@ -22,8 +22,10 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .config import settings
 from .models.contracts import (
@@ -61,6 +63,8 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+from fastapi.encoders import jsonable_encoder
+
 # Allow Electron renderer / localhost to call us during development
 app.add_middleware(
     CORSMiddleware,
@@ -68,6 +72,37 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Sanitized validation error handler returning both details and detail keys."""
+    errors = []
+    for err in exc.errors():
+        field_name = " -> ".join(str(loc) for loc in err.get("loc", []))
+        errors.append(f"{field_name}: {err.get('msg', 'invalid value')}")
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": "Validation Error",
+            "message": "The request body failed schema validation.",
+            "details": errors,
+            "detail": jsonable_encoder(exc.errors()),
+        },
+    )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Sanitized HTTP exception handler exposing error and detail keys."""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": exc.detail if isinstance(exc.detail, str) else "Request Error",
+            "detail": exc.detail,
+            "status_code": exc.status_code,
+        },
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -124,6 +159,11 @@ async def decompose(request: TaskDecompositionRequest) -> TaskDecompositionRespo
     Returns a structured list of subtasks, with the smallest immediate next step
     flagged as `isImmediateNextStep=true`.
     """
+    if len(request.taskDescription) > 500:
+        raise HTTPException(
+            status_code=400,
+            detail="taskDescription exceeds maximum allowed length of 500 characters.",
+        )
     logger.info("decompose called | task=%r", request.taskDescription[:80])
     return await assistant_service.decompose(request)
 

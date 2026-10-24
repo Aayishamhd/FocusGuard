@@ -99,6 +99,13 @@ class TaskDecompositionRequest(BaseModel):
     difficultyLevel: Optional[Literal["quick", "moderate", "complex"]] = None
     existingSubtasks: Optional[List[str]] = None
 
+    @field_validator("taskDescription")
+    @classmethod
+    def validate_task_desc(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("taskDescription cannot be empty or whitespace")
+        return v
+
 
 class Subtask(BaseModel):
     stepNumber: int
@@ -118,9 +125,12 @@ class TaskDecompositionResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 UserReason = Literal["tired", "task_confusing", "distracted", "need_break", "other"]
-RecoveryRecommendation = Literal[
-    "take_break", "simplify_task", "resume_previous", "custom_tip"
-]
+
+class RecoveryRecommendation(str, Enum):
+    TAKE_BREAK = "take_break"
+    SIMPLIFY_TASK = "simplify_task"
+    RESUME_PREVIOUS = "resume_previous"
+    CUSTOM_TIP = "custom_tip"
 
 
 class RecoveryActionPayload(BaseModel):

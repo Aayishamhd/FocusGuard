@@ -65,6 +65,10 @@ class OllamaClient:
         self._last_health_check = now
         return self._cached_available
 
+    async def is_connected(self, force_check: bool = False) -> bool:
+        """Alias for is_available() for compatibility."""
+        return await self.is_available(force_check=force_check)
+
     async def generate(
         self,
         prompt: str,
