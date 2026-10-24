@@ -1,0 +1,122 @@
+[
+  {
+    "_scenario": "focused",
+    "_description": "User is in deep work on VS Code — no intervention expected",
+    "eventId": "ae-mock-001",
+    "timestamp": "2026-10-24T10:00:00.000Z",
+    "attentionState": "FOCUSED",
+    "confidence": 0.91,
+    "activeApp": {
+      "appName": "Code",
+      "windowTitle": "assistant_service.py — FocusGuard",
+      "category": "work"
+    },
+    "metrics": {
+      "sessionDurationSeconds": 1200,
+      "appDurationSeconds": 900,
+      "recentSwitchCount": 1,
+      "inactivitySeconds": 0
+    },
+    "sources": ["window_tracker", "activity_monitor"]
+  },
+  {
+    "_scenario": "focused-long",
+    "_description": "User has been focused for 95 minutes — break suggestion expected",
+    "eventId": "ae-mock-002",
+    "timestamp": "2026-10-24T10:05:00.000Z",
+    "attentionState": "FOCUSED",
+    "confidence": 0.88,
+    "activeApp": {
+      "appName": "Code",
+      "windowTitle": "server.py — FocusGuard",
+      "category": "work"
+    },
+    "metrics": {
+      "sessionDurationSeconds": 5700,
+      "appDurationSeconds": 4800,
+      "recentSwitchCount": 2,
+      "inactivitySeconds": 0
+    },
+    "sources": ["window_tracker", "activity_monitor"]
+  },
+  {
+    "_scenario": "possibly-drifting",
+    "_description": "User switched to YouTube — gentle reminder expected",
+    "eventId": "ae-mock-003",
+    "timestamp": "2026-10-24T10:10:00.000Z",
+    "attentionState": "POSSIBLY_DRIFTING",
+    "confidence": 0.72,
+    "activeApp": {
+      "appName": "Google Chrome",
+      "windowTitle": "YouTube — Lo-Fi Coding Beats",
+      "category": "entertainment"
+    },
+    "metrics": {
+      "sessionDurationSeconds": 1840,
+      "appDurationSeconds": 240,
+      "recentSwitchCount": 5,
+      "inactivitySeconds": 15
+    },
+    "sources": ["window_tracker", "activity_monitor"]
+  },
+  {
+    "_scenario": "distracted",
+    "_description": "User on Reddit for 8 minutes after switching 6 times — recovery suggestion",
+    "eventId": "ae-mock-004",
+    "timestamp": "2026-10-24T10:15:00.000Z",
+    "attentionState": "DISTRACTED",
+    "confidence": 0.85,
+    "activeApp": {
+      "appName": "Google Chrome",
+      "windowTitle": "Reddit — r/programming",
+      "category": "entertainment"
+    },
+    "metrics": {
+      "sessionDurationSeconds": 2100,
+      "appDurationSeconds": 480,
+      "recentSwitchCount": 6,
+      "inactivitySeconds": 0
+    },
+    "sources": ["window_tracker", "activity_monitor"]
+  },
+  {
+    "_scenario": "recovering",
+    "_description": "User just returned to VS Code after distraction — no interrupt",
+    "eventId": "ae-mock-005",
+    "timestamp": "2026-10-24T10:20:00.000Z",
+    "attentionState": "RECOVERING",
+    "confidence": 0.65,
+    "activeApp": {
+      "appName": "Code",
+      "windowTitle": "fallback_heuristics.py — FocusGuard",
+      "category": "work"
+    },
+    "metrics": {
+      "sessionDurationSeconds": 2160,
+      "appDurationSeconds": 45,
+      "recentSwitchCount": 4,
+      "inactivitySeconds": 0
+    },
+    "sources": ["window_tracker", "activity_monitor"]
+  },
+  {
+    "_scenario": "idle",
+    "_description": "User has been idle for 6 minutes — gentle reminder",
+    "eventId": "ae-mock-006",
+    "timestamp": "2026-10-24T10:25:00.000Z",
+    "attentionState": "IDLE",
+    "confidence": 0.99,
+    "activeApp": {
+      "appName": "Code",
+      "windowTitle": "server.py — FocusGuard",
+      "category": "work"
+    },
+    "metrics": {
+      "sessionDurationSeconds": 2400,
+      "appDurationSeconds": 360,
+      "recentSwitchCount": 0,
+      "inactivitySeconds": 370
+    },
+    "sources": ["activity_monitor"]
+  }
+]

@@ -1,0 +1,64 @@
+{
+  "A": {
+    "status": 200,
+    "shouldIntervene": false,
+    "level": "LEVEL_0_NONE",
+    "triggerReason": "User is focused"
+  },
+  "B": {
+    "status": 200,
+    "shouldIntervene": false,
+    "level": "LEVEL_0_NONE",
+    "triggerReason": "Productive workflow switching (4 switches) across utility tools"
+  },
+  "C": {
+    "status": 200,
+    "shouldIntervene": true,
+    "level": "LEVEL_2_RECOVERY_SUGGESTION",
+    "actions": [
+      "return_to_task",
+      "break_down_task",
+      "take_break",
+      "dismiss"
+    ]
+  },
+  "D": {
+    "status": 200,
+    "subtask_count": 4,
+    "subtasks": [
+      "Plan and define the scope of: Build my final-year project presentation.",
+      "Gather resources and information needed for: Build my final-year project presentation.",
+      "Execute the main work for: Build my final-year project presentation.",
+      "Review and finalise: Build my final-year project presentation."
+    ],
+    "first_is_immediate": true
+  },
+  "E": {
+    "status": 200,
+    "recommendation": "simplify_task",
+    "supportiveMessage": "Complex tasks can feel overwhelming. Let's break it into smaller, clearer steps so you know exactly what to do next.",
+    "actionPayload": {
+      "suggestedBreakMinutes": null,
+      "suggestedNextAction": "Break your task into 3 smaller steps"
+    }
+  },
+  "F": {
+    "status": 200,
+    "recommendation": "take_break",
+    "supportiveMessage": "It's okay to feel tired \u2014 rest is part of the process. A short 5-minute break can make a real difference.",
+    "suggestedBreakMinutes": 5
+  },
+  "I": {
+    "status": 200,
+    "shouldIntervene": false,
+    "level": "LEVEL_0_NONE"
+  },
+  "J": {
+    "status": 422,
+    "error_type": "missing",
+    "error_loc": [
+      "body",
+      "timestamp"
+    ]
+  }
+}
